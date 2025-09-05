@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>เกมคณิตคิดเร็ว</title>
+  <style>
+   html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* ❌ ป้องกัน scroll ทั้งหน้า */
+  font-family: "Arial", sans-serif;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  background: #1e293b;
+  color: rgb(229, 22, 248);
+  padding: 8px 15px;
+  height: 60px;
+}
+
+header img {
+  display: flex;
+  position: relative;
+  width: 70px;
+  height: 70px;
+  margin-right: 10px;
+}
+
+.container {
+  display: flex;
+  height: calc(100% - 60px); /* ลบพื้นที่ header ออก */
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  padding: 10px;
+}
+
+.timer {
+  font-size: 80px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.numbers {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.number-box {
+  width: 120px;
+  height: 120px;
+  background: white;
+  border: 3px solid #a00098;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.answer-box {
+  width: 170px;
+  height: 100px;
+  background: #f0ff1f;
+  border: 3px solid #fcb621;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 70px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  color: #292929;
+}
+
+.sidebar {
+  width: 260px;
+  background: #e2e8f0;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 3px solid #cbd5e1;
+  overflow-y: auto; /* ✅ เลื่อนแค่ sidebar ถ้าของเยอะ */
+}
+
+.sidebar h3 {
+  margin-bottom: 8px;
+  color: #1e293b;
+}
+
+input, button {
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #94a3b8;
+}
+
+button {
+  background: #0ea5e9;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+}
+
+button:hover {
+  background: #0284c7;
+  border: none;
+}
+.popup {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  width: 300px;
+}
+
+.popup-content button {
+  margin-top: 15px;
+  background: #f44336;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+.start {
+  background-color: #01e60d;
+  border: none;
+}
+.start:hover {
+  background-color: #30fa3a;
+  border: none;
+}
+.stoptime {
+  background-color: red;
+  border: none;
+}
+.stoptime:hover {
+  background-color: rgb(248, 54, 54);
+  border: none;
+}
+
+
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://drive.google.com/file/d/1nCHet6VrN6Y6fpN9lvrjuoJgAaTvQsLW/view?usp=sharing" alt="Logo">
+    <h2>โรงเรียนโกรกพระ</h2>
+  </header>
+
+  <div class="container">
+    <div class="main">
+      <div class="timer" id="timerDisplay">00:00</div>
+      <div class="numbers">
+        <div class="number-box" id="num1">0</div>
+        <div class="number-box" id="num2">0</div>
+        <div class="number-box" id="num3">0</div>
+        <div class="number-box" id="num4">0</div>
+      </div>
+      <div class="answer-box" id="answerBox">0</div>
+    </div>
+    <!-- Popup หมดเวลา -->
+    <div class="popup" id="timePopup">
+      <div class="popup-content">
+        <h2>หมดเวลา!</h2>
+        <button onclick="closeTimePopup()">ปิด</button>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <h3>ตั้งค่าเกม</h3>
+      <label>คำตอบขั้นต่ำ:</label>
+      <input type="number" id="minAnswer" value="1"/>
+      <label>คำตอบสูงสุด:</label>
+      <input type="number" id="maxAnswer" value="100"/>
+      <label>เวลาถอยหลัง (วินาที):</label>
+      <input type="number" id="timeInput" value="60"/>
+      <button onclick="startTimer()" class="start">เริ่มจับเวลา</button>
+      <button onclick="stopTimer()" class="stoptime">หยุดเวลา</button>
+      <button onclick="randomizeAll()">สุ่มใหม่ทั้งหมด</button>
+      <button onclick="randomizeNumbers()">สุ่มโจทย์</button>
+      <button onclick="randomizeAnswer()">สุ่มคำตอบ</button>
+      
+    </div>
+
+
+  <audio id="spinSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+  <audio id="timeUpSound" src="https://www.fesliyanstudios.com/play-mp3/6765" preload="auto"></audio>
+  <audio id="doneSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
+
+  <script>
+    let timerInterval;
+    let remainingTime = 0;
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(remainingTime / 60).toString().padStart(2, '0');
+      const seconds = (remainingTime % 60).toString().padStart(2, '0');
+      document.getElementById('timerDisplay').innerText = `${minutes}:${seconds}`;
+    }
+
+    function showTimePopup() {
+  document.getElementById('timePopup').style.display = 'flex';
+}
+
+function closeTimePopup() {
+  document.getElementById('timePopup').style.display = 'none';
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  remainingTime = parseInt(document.getElementById('timeInput').value);
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    remainingTime--;
+    updateTimerDisplay();
+    if (remainingTime <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timeUpSound').play();
+      showTimePopup(); // <-- ใช้ popup แทน alert
+    }
+  }, 1000);
+}
+
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    async function spinElement(element, finalValue) {
+      return new Promise(resolve => {
+        const spinSound = document.getElementById('spinSound');
+        let count = 0;
+        const interval = setInterval(() => {
+          element.innerText = Math.floor(Math.random() * 10);
+          spinSound.currentTime = 0;
+          spinSound.play();
+          count++;
+          if (count > 15) {
+            clearInterval(interval);
+            element.innerText = finalValue;
+            resolve();
+          }
+        }, 80);
+      });
+    }
+
+    async function randomizeAll() {
+      const minAnswer = parseInt(document.getElementById('minAnswer').value);
+      const maxAnswer = parseInt(document.getElementById('maxAnswer').value);
+      const answer = Math.floor(Math.random() * (maxAnswer - minAnswer + 1)) + minAnswer;
+
+      const nums = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10));
+
+      await spinElement(document.getElementById('num1'), nums[0]);
+      await spinElement(document.getElementById('num2'), nums[1]);
+      await spinElement(document.getElementById('num3'), nums[2]);
+      await spinElement(document.getElementById('num4'), nums[3]);
+
+      await spinElement(document.getElementById('answerBox'), answer);
+    }
+    async function randomizeAnswer() {
+    const minAnswer = parseInt(document.getElementById('minAnswer').value);
+    const maxAnswer = parseInt(document.getElementById('maxAnswer').value);
+    const answer = Math.floor(Math.random() * (maxAnswer - minAnswer + 1)) + minAnswer;
+
+    await spinElement(document.getElementById('answerBox'), answer);
+  }
+
+   async function randomizeNumbers() {
+  const nums = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10));
+  const doneSound = document.getElementById('doneSound');
+
+  for (let i = 0; i < 4; i++) {
+    await spinElement(document.getElementById(`num${i+1}`), nums[i]);
+    doneSound.currentTime = 0;  // รีเซ็ตเสียง
+    doneSound.play();           // เล่นเสียงตอนตัวนี้สุ่มเสร็จ
+  }
+}
+
+
+  </script>
+</body>
+</html>
